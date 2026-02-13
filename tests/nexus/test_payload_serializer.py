@@ -6,8 +6,8 @@ correctly.
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 import nexusrpc
 import pytest
