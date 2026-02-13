@@ -69,7 +69,9 @@ class PayloadCodecThatRaisesApplicationError(PayloadCodec):
         for p in payloads:
             if b'"value"' in p.data and b'"test"' in p.data:
                 # This is likely the Nexus operation input
-                raise ApplicationError("Payload codec ApplicationError", non_retryable=True)
+                raise ApplicationError(
+                    "Payload codec ApplicationError", non_retryable=True
+                )
         return list(payloads)
 
 
@@ -93,7 +95,9 @@ class PayloadConverterThatRaisesException(PayloadConverter):
             if b'"value"' in p.data and b'"test"' in p.data:
                 raise Exception("Payload converter from_payloads error")
         # Otherwise use default converter
-        return DataConverter.default.payload_converter.from_payloads(payloads, type_hints)
+        return DataConverter.default.payload_converter.from_payloads(
+            payloads, type_hints
+        )
 
 
 class PayloadConverterThatRaisesApplicationError(PayloadConverter):
@@ -113,7 +117,9 @@ class PayloadConverterThatRaisesApplicationError(PayloadConverter):
                     "Payload converter ApplicationError", non_retryable=True
                 )
         # Otherwise use default converter
-        return DataConverter.default.payload_converter.from_payloads(payloads, type_hints)
+        return DataConverter.default.payload_converter.from_payloads(
+            payloads, type_hints
+        )
 
 
 # ============================================================================
@@ -129,9 +135,7 @@ class TestService:
 @nexusrpc.handler.service_handler(service=TestService)
 class TestServiceHandler:
     @sync_operation
-    async def echo_operation(
-        self, _ctx: StartOperationContext, input: Input
-    ) -> Output:
+    async def echo_operation(self, _ctx: StartOperationContext, input: Input) -> Output:
         return Output(value=f"Processed: {input.value}")
 
 
@@ -203,7 +207,10 @@ async def test_payload_codec_exception_becomes_internal_handler_error(
 
         handler_error = nexus_error.__cause__
         assert handler_error.type == nexusrpc.HandlerErrorType.INTERNAL
-        assert "Data converter payload codec failed to decode Nexus operation input" in str(handler_error)
+        assert (
+            "Data converter payload codec failed to decode Nexus operation input"
+            in str(handler_error)
+        )
         assert handler_error.retryable_override is False
 
 
@@ -293,7 +300,10 @@ async def test_payload_converter_exception_becomes_bad_request_handler_error(
 
         handler_error = nexus_error.__cause__
         assert handler_error.type == nexusrpc.HandlerErrorType.BAD_REQUEST
-        assert "Data converter payload converter failed to decode Nexus operation input" in str(handler_error)
+        assert (
+            "Data converter payload converter failed to decode Nexus operation input"
+            in str(handler_error)
+        )
         assert handler_error.retryable_override is False
 
 
