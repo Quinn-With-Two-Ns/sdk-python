@@ -471,15 +471,32 @@ class _DummyPayloadSerializer:
         content: nexusrpc.Content,  # type:ignore[reportUnusedParameter]
         as_type: type[Any] | None = None,
     ) -> Any:
+        payloads = [self.payload]
+        # For Nexus operations, we treat payload codec errors as internal errors (retryable)
+        # and payload converter errors as bad requests (not retryable) since a payload codec error likely 
+        # means there is a transient issue with the underlying data store or network, while a 
+        # payload converter error likely means the worker cannot understand the input and 
+        # will not be able to succeed even if it retries.
+        if self.data_converter.payload_codec:
+            try:
+                payloads = await self.data_converter.payload_codec.decode(payloads)
+            except ApplicationError as err:
+                # Re-raise ApplicationError from payload codec as-is and rely on the handler code to convert to HandlerError.
+                raise err
+            except Exception as err:
+                raise nexusrpc.HandlerError(
+                    "Data converter payload codec failed to decode Nexus operation input",
+                    type=nexusrpc.HandlerErrorType.INTERNAL,
+                    retryable_override=False,
+                ) from err
         try:
-            [input] = await self.data_converter.decode(
-                [self.payload],
-                type_hints=[as_type] if as_type else None,
-            )
-            return input
+            return self.data_converter.payload_converter.from_payloads(payloads, [as_type] if as_type else None)
+        except ApplicationError as err:
+            # Re-raise ApplicationError from payload codec as-is and rely on the handler code to convert to HandlerError.
+            raise err
         except Exception as err:
             raise nexusrpc.HandlerError(
-                "Data converter failed to decode Nexus operation input",
+                "Data converter payload converter failed to decode Nexus operation input",
                 type=nexusrpc.HandlerErrorType.BAD_REQUEST,
                 retryable_override=False,
             ) from err
