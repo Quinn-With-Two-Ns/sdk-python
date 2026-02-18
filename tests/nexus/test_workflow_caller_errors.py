@@ -402,16 +402,6 @@ class OperationThatExpectsStartToCloseTimeoutAsync(OperationHandler[None, None])
         pass
 
 
-class OperationThatExpectsStartToCloseTimeoutSync(OperationHandler[None, None]):
-    async def start(
-        self, ctx: StartOperationContext, input: None
-    ) -> StartOperationResultAsync:
-        return StartOperationResultAsync("fake-token")
-
-    async def cancel(self, ctx: CancelOperationContext, token: str) -> None:
-        pass
-
-
 @service_handler
 class StartToCloseTimeoutTestService:
     @operation_handler
