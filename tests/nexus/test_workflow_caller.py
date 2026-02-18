@@ -799,7 +799,8 @@ async def test_start_operation_headers(
         task_queue=task_queue,
         interceptors=[HeaderAddingOutboundInterceptor(), inbound_interceptor],
     ):
-        await create_nexus_endpoint(task_queue, client)
+        endpoint_name = make_nexus_endpoint_name(task_queue)
+        await env.create_nexus_endpoint(endpoint_name, task_queue)
 
         workflow_headers = {"x-custom-from-workflow": "workflow-value"}
         result = await client.execute_workflow(
@@ -844,7 +845,9 @@ async def test_workflow_run_operation_headers(
         workflows=[WorkflowRunHeaderTestCallerWorkflow, HeaderEchoWorkflow],
         task_queue=task_queue,
     ):
-        await create_nexus_endpoint(task_queue, client)
+        endpoint_name = make_nexus_endpoint_name(task_queue)
+        await env.create_nexus_endpoint(endpoint_name, task_queue)
+
         result = await client.execute_workflow(
             WorkflowRunHeaderTestCallerWorkflow.run,
             WorkflowRunHeaderTestCallerWfInput(
@@ -878,7 +881,8 @@ async def test_cancel_operation_headers(
         task_queue=task_queue,
         interceptors=[inbound_interceptor],
     ):
-        await create_nexus_endpoint(task_queue, client)
+        endpoint_name = make_nexus_endpoint_name(task_queue)
+        await env.create_nexus_endpoint(endpoint_name, task_queue)
 
         workflow_headers = {"x-custom-cancel": "cancel-value"}
         await client.execute_workflow(
@@ -2142,7 +2146,8 @@ class TestAsyncAndNonAsyncCancel:
             ],
             nexus_task_executor=concurrent.futures.ThreadPoolExecutor(),
         ):
-            await create_nexus_endpoint(task_queue, client)
+            endpoint_name = make_nexus_endpoint_name(task_queue)
+            await env.create_nexus_endpoint(endpoint_name, task_queue)
 
             caller_wf_handle = await client.start_workflow(
                 CancelTestCallerWorkflow.run,
