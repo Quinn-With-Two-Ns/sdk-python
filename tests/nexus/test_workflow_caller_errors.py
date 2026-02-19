@@ -34,7 +34,7 @@ from temporalio.exceptions import (
 from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 from tests.helpers import LogCapturer, assert_eq_eventually
-from tests.helpers.nexus import create_nexus_endpoint, make_nexus_endpoint_name
+from tests.helpers.nexus import make_nexus_endpoint_name
 
 operation_invocation_counts = Counter[str]()
 
@@ -148,7 +148,9 @@ async def test_nexus_operation_is_retried(
         workflows=[CallerWorkflow],
         task_queue=input.task_queue,
     ):
-        await create_nexus_endpoint(input.task_queue, client)
+        await env.create_nexus_endpoint(
+            make_nexus_endpoint_name(input.task_queue), input.task_queue
+        )
         asyncio.create_task(
             client.execute_workflow(
                 CallerWorkflow.run,
@@ -211,7 +213,9 @@ async def test_nexus_operation_fails_without_retry_as_handler_error(
         workflows=[CallerWorkflow],
         task_queue=input.task_queue,
     ):
-        await create_nexus_endpoint(input.task_queue, client)
+        await env.create_nexus_endpoint(
+            make_nexus_endpoint_name(input.task_queue), input.task_queue
+        )
         try:
             await client.execute_workflow(
                 CallerWorkflow.run,
@@ -283,7 +287,9 @@ async def test_error_raised_by_timeout_of_nexus_start_operation(
         task_queue=task_queue,
         nexus_task_executor=concurrent.futures.ThreadPoolExecutor(),
     ):
-        await create_nexus_endpoint(task_queue, client)
+        await env.create_nexus_endpoint(
+            make_nexus_endpoint_name(task_queue), task_queue
+        )
         try:
             await client.execute_workflow(
                 StartTimeoutTestCallerWorkflow.run,
@@ -377,7 +383,9 @@ async def test_error_raised_by_timeout_of_nexus_cancel_operation(
         task_queue=task_queue,
     ):
         with LogCapturer().logs_captured(logger) as capturer:
-            await create_nexus_endpoint(task_queue, client)
+            await env.create_nexus_endpoint(
+                make_nexus_endpoint_name(task_queue), task_queue
+            )
             try:
                 await client.execute_workflow(
                     CancellationTimeoutTestCallerWorkflow.run,
