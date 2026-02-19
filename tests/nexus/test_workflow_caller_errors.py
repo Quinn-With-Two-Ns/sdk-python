@@ -370,7 +370,9 @@ async def test_error_raised_by_schedule_to_start_timeout_of_nexus_operation(
         task_queue=task_queue,
         nexus_task_executor=concurrent.futures.ThreadPoolExecutor(),
     ):
-        await create_nexus_endpoint(task_queue, client)
+        await env.create_nexus_endpoint(
+            make_nexus_endpoint_name(task_queue), task_queue
+        )
         try:
             await client.execute_workflow(
                 ScheduleToStartTimeoutTestCallerWorkflow.run,
@@ -444,7 +446,9 @@ async def test_error_raised_by_start_to_close_timeout_of_nexus_operation(
         task_queue=task_queue,
         nexus_task_executor=concurrent.futures.ThreadPoolExecutor(),
     ):
-        await create_nexus_endpoint(task_queue, client)
+        await env.create_nexus_endpoint(
+            make_nexus_endpoint_name(task_queue), task_queue
+        )
         try:
             await client.execute_workflow(
                 StartToCloseTimeoutTestCallerWorkflow.run,
