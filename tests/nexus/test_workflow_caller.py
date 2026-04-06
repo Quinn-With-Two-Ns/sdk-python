@@ -714,14 +714,10 @@ class NexusInfoCallerWorkflow:
             service=NexusInfoService,
             endpoint=make_nexus_endpoint_name(task_queue),
         )
-        return await nexus_client.execute_operation(
-            NexusInfoService.get_info, None
-        )
+        return await nexus_client.execute_operation(NexusInfoService.get_info, None)
 
 
-async def test_nexus_info_includes_namespace(
-    client: Client, env: WorkflowEnvironment
-):
+async def test_nexus_info_includes_namespace(client: Client, env: WorkflowEnvironment):
     task_queue = str(uuid.uuid4())
     async with Worker(
         client,
