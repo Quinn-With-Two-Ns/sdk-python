@@ -242,7 +242,7 @@ class _NexusWorker:  # type:ignore[reportUnusedClass]
             request_deadline=request_deadline,
         )
         temporalio.nexus._operation_context._TemporalCancelOperationContext(
-            info=lambda: Info(task_queue=self._task_queue),
+            info=lambda: Info(namespace=self._client.namespace, task_queue=self._task_queue),
             nexus_context=ctx,
             client=self._client,
             _runtime_metric_meter=self._metric_meter,
@@ -373,7 +373,7 @@ class _NexusWorker:  # type:ignore[reportUnusedClass]
         temporalio.nexus._operation_context._TemporalStartOperationContext(
             nexus_context=ctx,
             client=self._client,
-            info=lambda: Info(task_queue=self._task_queue),
+            info=lambda: Info(namespace=self._client.namespace, task_queue=self._task_queue),
             _runtime_metric_meter=self._metric_meter,
             _worker_shutdown_event=self._worker_shutdown_event,
         ).set()

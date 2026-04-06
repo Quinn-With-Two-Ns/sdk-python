@@ -79,6 +79,9 @@ class Info:
     Retrieved inside a Nexus operation handler via :py:func:`info`.
     """
 
+    namespace: str
+    """The namespace of the worker handling this Nexus operation."""
+
     task_queue: str
     """The task queue of the worker handling this Nexus operation."""
 

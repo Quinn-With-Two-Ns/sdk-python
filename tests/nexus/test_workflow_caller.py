@@ -696,6 +696,51 @@ async def test_sync_operation_happy_path(client: Client, env: WorkflowEnvironmen
         assert wf_output.op_output.value == "sync response"
 
 
+@service_handler
+class NexusInfoService:
+    @sync_operation
+    async def get_info(
+        self, _ctx: StartOperationContext, _input: None
+    ) -> dict[str, str]:
+        info = nexus.info()
+        return {"namespace": info.namespace, "task_queue": info.task_queue}
+
+
+@workflow.defn
+class NexusInfoCallerWorkflow:
+    @workflow.run
+    async def run(self, task_queue: str) -> dict[str, str]:
+        nexus_client = workflow.create_nexus_client(
+            service=NexusInfoService,
+            endpoint=make_nexus_endpoint_name(task_queue),
+        )
+        return await nexus_client.execute_operation(
+            NexusInfoService.get_info, None
+        )
+
+
+async def test_nexus_info_includes_namespace(
+    client: Client, env: WorkflowEnvironment
+):
+    task_queue = str(uuid.uuid4())
+    async with Worker(
+        client,
+        nexus_service_handlers=[NexusInfoService()],
+        workflows=[NexusInfoCallerWorkflow],
+        task_queue=task_queue,
+    ):
+        endpoint_name = make_nexus_endpoint_name(task_queue)
+        await env.create_nexus_endpoint(endpoint_name, task_queue)
+        result = await client.execute_workflow(
+            NexusInfoCallerWorkflow.run,
+            task_queue,
+            id=str(uuid.uuid4()),
+            task_queue=task_queue,
+        )
+        assert result["namespace"] == client.namespace
+        assert result["task_queue"] == task_queue
+
+
 async def test_workflow_run_operation_happy_path(
     client: Client, env: WorkflowEnvironment
 ):
