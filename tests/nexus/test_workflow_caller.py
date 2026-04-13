@@ -737,7 +737,9 @@ async def test_nexus_info_includes_namespace(client: Client, env: WorkflowEnviro
             id=str(uuid.uuid4()),
             task_queue=task_queue,
         )
-        assert result["endpoint"] == endpoint_name
+        if not env.supports_time_skipping:
+            # Time-skipping server doesn't send the endpoint yet.
+            assert result["endpoint"] == endpoint_name
         assert result["namespace"] == client.namespace
         assert result["task_queue"] == task_queue
 
